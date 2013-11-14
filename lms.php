@@ -3,6 +3,30 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 ini_set("display_errors", 1);
 header('Content-Type: text/html; charset=utf-8');
 session_start();
+function findTools($dir, &$retval) {
+	if ( is_dir($dir) ) {
+		if ($dh = opendir($dir)) {
+			while (($sub = readdir($dh)) !== false) {
+				if ( strpos($sub, ".") === 0 ) continue;
+				$path = $dir . '/' . $sub;
+				if ( ! is_dir($path) ) continue;
+				if ( $sh = opendir($path)) {
+					while (($file = readdir($sh)) !== false) {
+						if ( $file == "index.php" ) {
+							$retval[] = $path  ."/" . $file;
+							break;
+						}
+					}
+					closedir($sh);
+				}
+			}
+			closedir($dh);
+		}
+	}
+}
+$tools = array();
+findTools("mod",$tools);
+findTools("solution",$tools);
 ?>
 <html>
 <head>
@@ -32,13 +56,23 @@ $instdata = array(
       "roles" => "Instructor"
 );
 
-$learnerdata = array(
+$learner1 = array(
       "lis_person_name_full" => 'Sue Student',
       "lis_person_name_family" => 'Student',
       "lis_person_name_given" => 'Sue',
       "lis_person_contact_email_primary" => "student@ischool.edu",
       "lis_person_sourcedid" => "ischool.edu:student",
       "user_id" => "998928898",
+      "roles" => "Learner"
+);
+
+$learner2 = array(
+      "lis_person_name_full" => 'Ed Student',
+      "lis_person_name_family" => 'Student',
+      "lis_person_name_given" => 'Ed',
+      "lis_person_contact_email_primary" => "ed@ischool.edu",
+      "lis_person_sourcedid" => "ischool.edu:ed",
+      "user_id" => "121212331",
       "roles" => "Learner"
 );
 
@@ -77,9 +111,15 @@ foreach ($lmsdata as $k => $val ) {
 	}
 }
 
-if ( isset($_POST['learner']) ) {
-	foreach ( $learnerdata as $k => $val ) {
-          $lmsdata[$k] = $learnerdata[$k];
+if ( isset($_POST['learner1']) ) {
+	foreach ( $learner1 as $k => $val ) {
+          $lmsdata[$k] = $learner1[$k];
+	}
+}
+
+if ( isset($_POST['learner2']) ) {
+	foreach ( $learner2 as $k => $val ) {
+          $lmsdata[$k] = $learner2[$k];
 	}
 }
 
@@ -109,7 +149,6 @@ if ( isset($_POST['instructor']) ) {
 
 ?>
 <script language="javascript"> 
-  //<![CDATA[ 
 function lmsdataToggle() {
     var ele = document.getElementById("lmsDataForm");
     if(ele.style.display == "block") {
@@ -119,7 +158,12 @@ function lmsdataToggle() {
         ele.style.display = "block";
     }
 } 
-  //]]> 
+
+function getComboA(sel) {
+    var value = sel.options[sel.selectedIndex].value;  
+    var ele = document.getElementById("custom_assn");
+	ele.value = value;
+}
 </script>
 <?php
   echo("<form method=\"post\">\n");
@@ -134,17 +178,27 @@ function lmsdataToggle() {
   echo("<fieldset><legend>LTI Resource</legend>\n");
   $disabled = '';
   echo("Launch URL: <input size=\"60\" type=\"text\" $disabled size=\"60\" name=\"endpoint\" value=\"$endpoint\">\n");
-  echo("<br/>Key: <input type\"text\" name=\"key\" $disapbled size=\"60\" value=\"$key\">\n");
+  echo("<br/>Key: <input type\"text\" name=\"key\" $disabled size=\"60\" value=\"$key\">\n");
   echo("<br/>Secret: <input type\"text\" name=\"secret\" $disabled size=\"60\" value=\"$secret\">\n");
   echo("</fieldset><p>");
   echo("<fieldset><legend>Launch Data</legend>\n");
-  echo("<input type=\"submit\" name=\"instructor\" value=\"Instructor data\">\n");
-  echo("<input type=\"submit\" name=\"learner\" value=\"Learner data\">\n");
+  echo("<input type=\"submit\" name=\"instructor\" value=\"Jane Instructor\">\n");
+  echo("<input type=\"submit\" name=\"learner1\" value=\"Sue Student\">\n");
+  echo("<input type=\"submit\" name=\"learner2\" value=\"Ed Student\">\n");
   echo("<br/>\n");
   foreach ($lmsdata as $k => $val ) {
-      echo($k.": <input type=\"text\" size=\"30\" name=\"".$k."\" value=\"");
+      echo($k.": <input id=\"".$k."\" type=\"text\" size=\"30\" name=\"".$k."\" value=\"");
       echo(htmlspecialchars($val));
-      echo("\"><br/>\n");
+      echo("\">");
+	  if ( $k == "custom_assn" && count($tools) > 0 ) {
+		echo('<select id="comboA" onchange="getComboA(this)">'."\n");
+		echo('<option value="">Switch tool</option>'."\n");
+		foreach ($tools as $tool ) {
+			echo('<option value="'.$tool.'">'.$tool.'</option>'."\n");
+		}
+		echo('</select>'."\n");
+      }
+	  echo("<br/>\n");
   }
   echo("</fieldset>\n");
   echo("</div>\n");
