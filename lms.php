@@ -26,7 +26,8 @@ function findTools($dir, &$retval) {
 }
 $tools = array();
 findTools("mod",$tools);
-findTools("solution",$tools);
+findTools("solutions",$tools);
+findTools("samples",$tools);
 ?>
 <html>
 <head>
@@ -77,7 +78,7 @@ $learner2 = array(
 );
 
 $lmsdata = array(
-      "custom_assn" => "mod/map/map.php",
+      "custom_assn" => "mod/map/index.php",
 
       "lis_person_name_full" => 'Jane Instructor',
       "lis_person_name_family" => 'Instructor',
