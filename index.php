@@ -123,6 +123,7 @@ if ( isset($_POST['instructor']) ) {
   if ( ! $key ) $key = "12345";
   $secret = trim($_REQUEST["secret"]);
   if ( ! $secret ) $secret = "secret";
+  if ( $secret == 'secret' ) $secret = 'secure';
   $endpoint = trim($_REQUEST["endpoint"]);
   $b64 = base64_encode($key.":::".$secret);
   if ( ! $endpoint ) $endpoint = str_replace("index.php","lti.php",$cur_url);
